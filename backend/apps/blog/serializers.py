@@ -98,14 +98,15 @@ class PostCreateSerializer(serializers.ModelSerializer):
         required=False,
         default=list
     )
+    author = AuthorSerializer(read_only=True)
 
     class Meta:
         model = Post
         fields = [
             'id', 'title', 'content', 'excerpt', 'category_id', 'tag_ids',
-            'status', 'featured_image'
+            'status', 'featured_image', 'author'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'author']
 
     def validate_title(self, value):
         """

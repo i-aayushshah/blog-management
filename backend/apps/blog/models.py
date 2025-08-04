@@ -163,6 +163,10 @@ class Post(BaseModel):
                 self.slug = f"{original_slug}-{counter}"
                 counter += 1
 
+        # Auto-generate excerpt if not provided
+        if not self.excerpt and self.content:
+            self.excerpt = self.content[:150] + '...' if len(self.content) > 150 else self.content
+
         # Set published_at if status is published and not already set
         if self.status == 'published' and not self.published_at:
             self.published_at = timezone.now()

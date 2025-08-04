@@ -84,10 +84,8 @@ class PostViewSet(ModelViewSet):
         """
         post = self.get_object()
         if post.author != self.request.user:
-            return Response(
-                {'error': 'You can only edit your own posts.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You can only edit your own posts.')
         serializer.save()
 
     def perform_destroy(self, instance):
@@ -95,10 +93,8 @@ class PostViewSet(ModelViewSet):
         Ensure user can only delete their own posts.
         """
         if instance.author != self.request.user:
-            return Response(
-                {'error': 'You can only delete your own posts.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You can only delete your own posts.')
         instance.delete()
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
