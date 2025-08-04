@@ -62,24 +62,21 @@ def get_user_from_token(token: str) -> Optional[User]:
 
     Returns:
         User instance or None if not found
-
-    Raises:
-        jwt.InvalidTokenError: If token is invalid
     """
     try:
         payload = decode_jwt_token(token)
         user_id = payload.get('user_id')
 
         if not user_id:
-            raise jwt.InvalidTokenError("Token payload missing user_id")
+            return None
 
         user = User.objects.get(id=user_id)
         return user
 
     except User.DoesNotExist:
-        raise jwt.InvalidTokenError("User not found")
+        return None
     except jwt.InvalidTokenError:
-        raise jwt.InvalidTokenError("Invalid token")
+        return None
 
 def is_token_valid(token: str) -> bool:
     """

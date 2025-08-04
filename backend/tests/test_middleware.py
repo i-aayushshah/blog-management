@@ -23,7 +23,7 @@ class MiddlewareTestCase(TestCase):
             password='testpass123',
             first_name='Test',
             last_name='User',
-            is_verified=True
+            is_email_verified=True
         )
 
     def test_middleware_with_valid_token(self):
@@ -42,6 +42,9 @@ class MiddlewareTestCase(TestCase):
         """Test middleware with invalid JWT token"""
         request = self.factory.get('/api/blog/posts/')
         request.META['HTTP_AUTHORIZATION'] = 'Bearer invalid_token'
+        # Initialize user as anonymous
+        from django.contrib.auth.models import AnonymousUser
+        request.user = AnonymousUser()
 
         response = self.middleware(request)
 
@@ -51,6 +54,9 @@ class MiddlewareTestCase(TestCase):
     def test_middleware_without_token(self):
         """Test middleware without JWT token"""
         request = self.factory.get('/api/blog/posts/')
+        # Initialize user as anonymous
+        from django.contrib.auth.models import AnonymousUser
+        request.user = AnonymousUser()
 
         response = self.middleware(request)
 
@@ -60,6 +66,9 @@ class MiddlewareTestCase(TestCase):
     def test_middleware_non_api_endpoint(self):
         """Test middleware with non-API endpoint"""
         request = self.factory.get('/admin/')
+        # Initialize user as anonymous
+        from django.contrib.auth.models import AnonymousUser
+        request.user = AnonymousUser()
 
         response = self.middleware(request)
 
@@ -71,6 +80,9 @@ class MiddlewareTestCase(TestCase):
         # Create a token that would be expired (this is a simplified test)
         request = self.factory.get('/api/blog/posts/')
         request.META['HTTP_AUTHORIZATION'] = 'Bearer expired_token_here'
+        # Initialize user as anonymous
+        from django.contrib.auth.models import AnonymousUser
+        request.user = AnonymousUser()
 
         response = self.middleware(request)
 
@@ -81,6 +93,9 @@ class MiddlewareTestCase(TestCase):
         """Test middleware with malformed authorization header"""
         request = self.factory.get('/api/blog/posts/')
         request.META['HTTP_AUTHORIZATION'] = 'InvalidFormat token'
+        # Initialize user as anonymous
+        from django.contrib.auth.models import AnonymousUser
+        request.user = AnonymousUser()
 
         response = self.middleware(request)
 
@@ -91,6 +106,9 @@ class MiddlewareTestCase(TestCase):
         """Test middleware with empty token"""
         request = self.factory.get('/api/blog/posts/')
         request.META['HTTP_AUTHORIZATION'] = 'Bearer '
+        # Initialize user as anonymous
+        from django.contrib.auth.models import AnonymousUser
+        request.user = AnonymousUser()
 
         response = self.middleware(request)
 
@@ -153,12 +171,12 @@ class CORSMiddlewareTestCase(APITestCase):
             password='testpass123',
             first_name='Test',
             last_name='User',
-            is_verified=True
+            is_email_verified=True
         )
 
     def test_cors_preflight_request(self):
         """Test CORS preflight request handling"""
-        response = self.client.options('/api/auth/login/', HTTP_ORIGIN='http://localhost:3000')
+        response = self.client.options('/api/v1/auth/login/', HTTP_ORIGIN='http://localhost:3000')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('Access-Control-Allow-Origin', response)
@@ -167,7 +185,7 @@ class CORSMiddlewareTestCase(APITestCase):
 
     def test_cors_actual_request(self):
         """Test CORS headers on actual request"""
-        response = self.client.get('/api/blog/posts/', HTTP_ORIGIN='http://localhost:3000')
+        response = self.client.get('/api/v1/blog/posts/', HTTP_ORIGIN='http://localhost:3000')
 
         self.assertIn('Access-Control-Allow-Origin', response)
         self.assertIn('Access-Control-Allow-Methods', response)
@@ -175,7 +193,7 @@ class CORSMiddlewareTestCase(APITestCase):
 
     def test_cors_without_origin(self):
         """Test CORS handling without origin header"""
-        response = self.client.get('/api/blog/posts/')
+        response = self.client.get('/api/v1/blog/posts/')
 
         # Should still work without origin header
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -189,12 +207,12 @@ class CORSMiddlewareTestCase(APITestCase):
         ]
 
         for origin in allowed_origins:
-            response = self.client.get('/api/blog/posts/', HTTP_ORIGIN=origin)
+            response = self.client.get('/api/v1/blog/posts/', HTTP_ORIGIN=origin)
             self.assertIn('Access-Control-Allow-Origin', response)
 
     def test_cors_disallowed_origin(self):
         """Test CORS with disallowed origin"""
-        response = self.client.get('/api/blog/posts/', HTTP_ORIGIN='http://malicious-site.com')
+        response = self.client.get('/api/v1/blog/posts/', HTTP_ORIGIN='http://malicious-site.com')
 
         # Should still work but may not include CORS headers for disallowed origins
         self.assertEqual(response.status_code, status.HTTP_200_OK)
