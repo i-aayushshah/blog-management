@@ -24,11 +24,11 @@ const RegisterForm: React.FC = () => {
     watch,
     formState: { errors },
     setError,
-  } = useForm<RegisterCredentials & { confirmPassword: string }>();
+  } = useForm<RegisterCredentials>();
 
   const password = watch('password');
 
-  const onSubmit = async (data: RegisterCredentials & { confirmPassword: string }) => {
+  const onSubmit = async (data: RegisterCredentials) => {
     // Validate password strength
     const passwordValidation = validatePassword(data.password);
     if (!passwordValidation.isValid) {
@@ -40,8 +40,8 @@ const RegisterForm: React.FC = () => {
     }
 
     // Check if passwords match
-    if (data.password !== data.confirmPassword) {
-      setError('confirmPassword', {
+    if (data.password !== data.password_confirm) {
+      setError('password_confirm', {
         type: 'manual',
         message: 'Passwords do not match',
       });
@@ -51,8 +51,7 @@ const RegisterForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { confirmPassword, ...registerData } = data;
-      const success = await registerUser(registerData);
+      const success = await registerUser(data);
       if (success) {
         router.push('/verify-email');
       }
@@ -183,8 +182,8 @@ const RegisterForm: React.FC = () => {
                 type={showConfirmPassword ? 'text' : 'password'}
                 placeholder="Confirm your password"
                 icon={<Lock className="h-4 w-4" />}
-                error={errors.confirmPassword?.message}
-                {...register('confirmPassword', {
+                error={errors.password_confirm?.message}
+                {...register('password_confirm', {
                   required: 'Please confirm your password',
                 })}
               />
