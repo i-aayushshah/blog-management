@@ -112,29 +112,17 @@ jobs:
         cd frontend
         npm install
 
-    - name: Fix Tailwind CSS v4 issues
+    - name: Fix lightningcss binary for Tailwind CSS v4
       run: |
         cd frontend
-        # Downgrade to stable Tailwind CSS v3
-        npm uninstall tailwindcss @tailwindcss/postcss
-        npm install tailwindcss@^3.4.0 postcss autoprefixer
-        # Create basic Tailwind config
-        npx tailwindcss init -p
-        # Create proper tailwind.config.js
-        cat > tailwind.config.js << 'EOF'
-        /** @type {import('tailwindcss').Config} */
-        module.exports = {
-          content: [
-            './pages/**/*.{js,ts,jsx,tsx,mdx}',
-            './components/**/*.{js,ts,jsx,tsx,mdx}',
-            './app/**/*.{js,ts,jsx,tsx,mdx}',
-          ],
-          theme: {
-            extend: {},
-          },
-          plugins: [],
-        }
-        EOF
+        # Install lightningcss binary manually for Linux
+        npm install lightningcss@latest
+        # Download the correct binary for Linux
+        curl -L https://github.com/parcel-bundler/lightningcss/releases/latest/download/lightningcss-linux-x64-gnu.tar.gz -o lightningcss.tar.gz
+        tar -xzf lightningcss.tar.gz
+        mkdir -p node_modules/lightningcss
+        cp lightningcss node_modules/lightningcss/lightningcss.linux-x64-gnu.node
+        rm lightningcss.tar.gz lightningcss
 
     - name: Run linting
       run: |
