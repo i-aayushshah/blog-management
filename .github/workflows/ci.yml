@@ -115,14 +115,15 @@ jobs:
     - name: Fix lightningcss binary for Tailwind CSS v4
       run: |
         cd frontend
-        # Install lightningcss binary manually for Linux
-        npm install lightningcss@latest
-        # Download the correct binary for Linux
-        curl -L https://github.com/parcel-bundler/lightningcss/releases/latest/download/lightningcss-linux-x64-gnu.tar.gz -o lightningcss.tar.gz
-        tar -xzf lightningcss.tar.gz
-        mkdir -p node_modules/lightningcss
-        cp lightningcss node_modules/lightningcss/lightningcss.linux-x64-gnu.node
-        rm lightningcss.tar.gz lightningcss
+        # Set environment variables for native module compilation
+        export npm_config_target_platform=linux
+        export npm_config_target_arch=x64
+        export npm_config_target_libc=glibc
+        # Force reinstall lightningcss with correct binary
+        npm uninstall lightningcss
+        npm install lightningcss@latest --force
+        # Try to rebuild the binary
+        npm rebuild lightningcss --update-binary
 
     - name: Run linting
       run: |
