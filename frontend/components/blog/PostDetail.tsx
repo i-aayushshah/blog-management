@@ -33,7 +33,7 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, className }) => {
   const { user } = useAuthStore();
   const { deletePost, publishPost, unpublishPost, isDeleting } = useBlogStore();
 
-  const isAuthor = user?.id === post.author.id;
+  const isAuthor = user?.id === post.author?.id;
   const canEdit = isAuthor;
 
   const handleEdit = () => {

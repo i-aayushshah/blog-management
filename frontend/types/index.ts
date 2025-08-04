@@ -70,7 +70,7 @@ export interface Post {
   slug: string;
   content: string;
   excerpt: string;
-  author: User;
+  author?: User;
   category?: Category;
   tags: Tag[];
   status: 'draft' | 'published';

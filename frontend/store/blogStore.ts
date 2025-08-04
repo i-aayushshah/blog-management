@@ -35,6 +35,7 @@ interface BlogState {
   fetchPosts: (params?: Record<string, string | number>) => Promise<void>;
   fetchFeaturedPosts: () => Promise<void>;
   fetchPost: (id: number) => Promise<void>;
+  fetchPostBySlug: (slug: string) => Promise<void>;
   fetchMyPosts: (params?: Record<string, string | number>) => Promise<void>;
   fetchCategories: () => Promise<void>;
   fetchTags: () => Promise<void>;
@@ -147,6 +148,23 @@ export const useBlogStore = create<BlogState>()(
           const response = await blogAPI.getPost(id);
           set({ currentPost: response.data, isLoading: false });
         } catch (error: any) {
+          set({
+            error: error.message || 'Failed to fetch post',
+            isLoading: false
+          });
+          toast.error('Failed to load post');
+        }
+      },
+
+      fetchPostBySlug: async (slug: string) => {
+        console.log('🔍 fetchPostBySlug called with slug:', slug);
+        set({ isLoading: true, error: null });
+        try {
+          const response = await blogAPI.getPostBySlug(slug);
+          console.log('✅ fetchPostBySlug successful:', response.data.title);
+          set({ currentPost: response.data, isLoading: false });
+        } catch (error: any) {
+          console.error('❌ fetchPostBySlug failed:', error);
           set({
             error: error.message || 'Failed to fetch post',
             isLoading: false

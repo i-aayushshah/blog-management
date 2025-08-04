@@ -118,7 +118,7 @@ const PostCard: React.FC<PostCardProps> = ({
         )}>
           <div className="flex items-center gap-4">
             {/* Author */}
-            {showAuthor && (
+            {showAuthor && post.author && (
               <div className="flex items-center gap-1">
                 <User className="w-4 h-4" />
                 <span className="truncate">

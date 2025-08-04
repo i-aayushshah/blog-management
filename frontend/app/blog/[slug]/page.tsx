@@ -15,7 +15,7 @@ const PostPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { fetchPost, posts } = useBlogStore();
+  const { fetchPostBySlug, posts, currentPost } = useBlogStore();
 
   useEffect(() => {
     const loadPost = async () => {
@@ -29,28 +29,61 @@ const PostPage: React.FC = () => {
         const existingPost = posts.find(p => p.slug === slug);
 
         if (existingPost) {
+          console.log('✅ Found post in store:', existingPost.title);
           setPost(existingPost);
           // Get related posts (same category or tags)
           const related = posts
             .filter(p => p.id !== existingPost.id && p.status === 'published')
             .slice(0, 3);
           setRelatedPosts(related);
+          setIsLoading(false);
         } else {
-          // If not in store, try to fetch by slug
-          // This would require a backend endpoint to fetch by slug
-          // For now, we'll show an error
-          setError('Post not found');
+          console.log('🔍 Post not found in store, fetching by slug:', slug);
+          // If not in store, fetch by slug from backend
+          await fetchPostBySlug(slug);
+          // Don't set isLoading to false here - let the currentPost effect handle it
         }
       } catch (err) {
+        console.error('❌ Error loading post:', err);
         setError('Failed to load post');
-        console.error('Error loading post:', err);
-      } finally {
         setIsLoading(false);
       }
     };
 
     loadPost();
-  }, [slug, posts]);
+  }, [slug, posts, fetchPostBySlug]);
+
+  // Fallback: if we're still loading after 3 seconds and no currentPost, try fetching again
+  useEffect(() => {
+    if (isLoading && !currentPost && slug) {
+      const timeout = setTimeout(async () => {
+        console.log('⏰ Fallback: Still loading, trying fetchPostBySlug again');
+        try {
+          await fetchPostBySlug(slug);
+        } catch (err) {
+          console.error('❌ Fallback fetch failed:', err);
+          setError('Failed to load post');
+          setIsLoading(false);
+        }
+      }, 3000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [isLoading, currentPost, slug, fetchPostBySlug]);
+
+  // Update post when currentPost changes (from fetchPostBySlug)
+  useEffect(() => {
+    if (currentPost && currentPost.slug === slug) {
+      console.log('✅ Current post updated from fetchPostBySlug:', currentPost.title);
+      setPost(currentPost);
+      // Get related posts from the main posts array
+      const related = posts
+        .filter(p => p.id !== currentPost.id && p.status === 'published')
+        .slice(0, 3);
+      setRelatedPosts(related);
+      setIsLoading(false);
+    }
+  }, [currentPost, slug, posts]);
 
   if (isLoading) {
     return (

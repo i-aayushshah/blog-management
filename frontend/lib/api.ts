@@ -144,6 +144,7 @@ export const blogAPI = {
   // Posts
   getPosts: (params?: Record<string, string | number>) => api.get('/blog/posts/', { params }),
   getPost: (id: number) => api.get(`/blog/posts/${id}/`),
+  getPostBySlug: (slug: string) => api.get(`/blog/posts/by-slug/${slug}/`),
   createPost: (data: CreatePostData) => {
     // Handle file upload with FormData
     if (data.featured_image) {

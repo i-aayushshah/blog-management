@@ -149,11 +149,24 @@ export function isMobile(): boolean {
 }
 
 // Get user's display name
-export function getDisplayName(user: { first_name: string; last_name: string; username: string }): string {
+export function getDisplayName(user?: { first_name?: string; last_name?: string; username?: string } | null): string {
+  if (!user) {
+    return 'Unknown User';
+  }
+
   if (user.first_name && user.last_name) {
     return `${user.first_name} ${user.last_name}`;
   }
-  return user.username;
+
+  if (user.first_name) {
+    return user.first_name;
+  }
+
+  if (user.username) {
+    return user.username;
+  }
+
+  return 'Unknown User';
 }
 
 // Capitalize first letter

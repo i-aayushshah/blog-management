@@ -201,6 +201,31 @@ class PostViewSet(ModelViewSet):
         serializer = PostDetailSerializer(post)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
+    def by_slug(self, request, slug=None):
+        """
+        Get a post by slug.
+        """
+        try:
+            post = Post.objects.select_related('author', 'category').prefetch_related('tags').get(slug=slug)
+
+            # For public access, only show published posts
+            if not request.user.is_authenticated or post.author != request.user:
+                if post.status != 'published':
+                    return Response(
+                        {'error': 'Post not found.'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+
+            serializer = PostDetailSerializer(post)
+            return Response(serializer.data)
+
+        except Post.DoesNotExist:
+            return Response(
+                {'error': 'Post not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
 class CategoryViewSet(ReadOnlyModelViewSet):
     """
     ViewSet for categories (read-only).

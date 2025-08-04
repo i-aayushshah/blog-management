@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from rest_framework import serializers
 from .models import Post, Category, Tag
 
@@ -43,6 +44,7 @@ class PostListSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     excerpt = serializers.ReadOnlyField()
     reading_time = serializers.ReadOnlyField()
+    featured_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -52,6 +54,14 @@ class PostListSerializer(serializers.ModelSerializer):
             'reading_time'
         ]
 
+    def get_featured_image(self, obj):
+        if obj.featured_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.featured_image.url)
+            return f"http://localhost:8000{obj.featured_image.url}"
+        return None
+
 class PostDetailSerializer(serializers.ModelSerializer):
     """
     Serializer for detailed post view.
@@ -60,6 +70,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     reading_time = serializers.ReadOnlyField()
+    featured_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -68,6 +79,14 @@ class PostDetailSerializer(serializers.ModelSerializer):
             'status', 'featured_image', 'created_at', 'updated_at', 'published_at',
             'reading_time'
         ]
+
+    def get_featured_image(self, obj):
+        if obj.featured_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.featured_image.url)
+            return f"http://localhost:8000{obj.featured_image.url}"
+        return None
 
 class PostCreateSerializer(serializers.ModelSerializer):
     """
@@ -260,6 +279,7 @@ class MyPostSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     excerpt = serializers.ReadOnlyField()
     reading_time = serializers.ReadOnlyField()
+    featured_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
@@ -268,3 +288,11 @@ class MyPostSerializer(serializers.ModelSerializer):
             'status', 'featured_image', 'created_at', 'updated_at', 'published_at',
             'reading_time'
         ]
+
+    def get_featured_image(self, obj):
+        if obj.featured_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.featured_image.url)
+            return f"http://localhost:8000{obj.featured_image.url}"
+        return None
