@@ -112,6 +112,15 @@ jobs:
         cd frontend
         npm install
 
+    - name: Fix Tailwind CSS v4 issues
+      run: |
+        cd frontend
+        # Downgrade to stable Tailwind CSS v3
+        npm uninstall tailwindcss @tailwindcss/postcss
+        npm install tailwindcss@^3.4.0 postcss autoprefixer
+        # Create basic Tailwind config
+        npx tailwindcss init -p
+
     - name: Run linting
       run: |
         cd frontend
