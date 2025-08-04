@@ -120,6 +120,21 @@ jobs:
         npm install tailwindcss@^3.4.0 postcss autoprefixer
         # Create basic Tailwind config
         npx tailwindcss init -p
+        # Create proper tailwind.config.js
+        cat > tailwind.config.js << 'EOF'
+        /** @type {import('tailwindcss').Config} */
+        module.exports = {
+          content: [
+            './pages/**/*.{js,ts,jsx,tsx,mdx}',
+            './components/**/*.{js,ts,jsx,tsx,mdx}',
+            './app/**/*.{js,ts,jsx,tsx,mdx}',
+          ],
+          theme: {
+            extend: {},
+          },
+          plugins: [],
+        }
+        EOF
 
     - name: Run linting
       run: |
