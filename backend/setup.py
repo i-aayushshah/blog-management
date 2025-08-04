@@ -85,6 +85,10 @@ def main():
     if not run_command("python test_setup.py", "Testing setup"):
         return False
 
+    # Test Part 2 models
+    if not run_command("python test_part2.py", "Testing Part 2 models"):
+        return False
+
     print("\n🎉 Setup completed successfully!")
     print("\nNext steps:")
     print("1. Create a superuser: python manage.py createsuperuser")
