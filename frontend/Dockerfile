@@ -10,6 +10,11 @@ COPY package*.json ./
 # Install all dependencies (including dev dependencies for build)
 RUN npm install
 
+# Fix Tailwind CSS v4 native modules for Alpine Linux
+RUN npm uninstall lightningcss @tailwindcss/oxide && \
+    npm install lightningcss@latest @tailwindcss/oxide@latest --force && \
+    npm rebuild lightningcss @tailwindcss/oxide --update-binary
+
 # Copy project files
 COPY . .
 
