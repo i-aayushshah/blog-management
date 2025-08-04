@@ -182,7 +182,7 @@ const PostForm: React.FC<PostFormProps> = ({ post, mode, onSuccess }) => {
         if (success) {
           // Don't refresh auth - let it persist naturally
           console.log('✅ Post updated successfully, auth state preserved');
-          router.push(`/blog/${post.slug}`);
+          router.push('/profile');
         }
       }
 
