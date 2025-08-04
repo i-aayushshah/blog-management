@@ -112,18 +112,18 @@ jobs:
         cd frontend
         npm install
 
-    - name: Fix lightningcss binary for Tailwind CSS v4
+    - name: Fix Tailwind CSS v4 native modules
       run: |
         cd frontend
         # Set environment variables for native module compilation
         export npm_config_target_platform=linux
         export npm_config_target_arch=x64
         export npm_config_target_libc=glibc
-        # Force reinstall lightningcss with correct binary
-        npm uninstall lightningcss
-        npm install lightningcss@latest --force
-        # Try to rebuild the binary
-        npm rebuild lightningcss --update-binary
+        # Force reinstall all native modules with correct binaries
+        npm uninstall lightningcss @tailwindcss/oxide
+        npm install lightningcss@latest @tailwindcss/oxide@latest --force
+        # Try to rebuild all native modules
+        npm rebuild lightningcss @tailwindcss/oxide --update-binary
 
     - name: Run linting
       run: |
