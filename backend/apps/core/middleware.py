@@ -19,11 +19,31 @@ class JWTAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        # Let DRF handle authentication for API endpoints
+        # Only handle API endpoints
         if request.path.startswith('/api/'):
-            return self.get_response(request)
+            # Get the authorization header
+            auth_header = request.META.get('HTTP_AUTHORIZATION', '')
 
-        # For non-API endpoints, we can add custom logic here if needed
+            if auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+
+                try:
+                    # Get user from token
+                    from apps.authentication.jwt_utils import get_user_from_token
+                    user = get_user_from_token(token)
+
+                    if user:
+                        # Set the user on the request
+                        request.user = user
+                        print(f"🔐 JWT Authentication successful for user: {user.email}")
+                    else:
+                        print("⚠️ JWT Authentication failed: No user found")
+
+                except Exception as e:
+                    print(f"❌ JWT Authentication error: {str(e)}")
+                    # Don't set user, let it remain anonymous
+                    pass
+
         return self.get_response(request)
 
 class RequestLoggingMiddleware(MiddlewareMixin):

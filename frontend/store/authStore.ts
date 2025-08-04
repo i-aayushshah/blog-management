@@ -24,6 +24,11 @@ interface AuthState {
   setUser: (user: User) => void;
   setToken: (token: string) => void;
   clearAuth: () => void;
+
+  // Debug and utility methods
+  debugState: () => void;
+  checkPersistedData: () => void;
+  restoreUserFromToken: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -195,7 +200,7 @@ export const useAuthStore = create<AuthState>()(
 
       // Check authentication status
       checkAuth: async () => {
-        const { token } = get();
+        const { token, user } = get();
 
         if (!token) {
           set({ isAuthenticated: false });
@@ -206,25 +211,20 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           const response = await authAPI.checkAuth();
-          const { user } = response.data;
+          const { user: userData } = response.data;
+
+          console.log('🔐 Auth check successful, user data:', userData);
 
           set({
-            user,
+            user: userData,
             isAuthenticated: true,
             isLoading: false,
           });
 
           return true;
-                } catch (error: any) {
-          console.log('⚠️ Auth check failed, but preserving user data:', error);
+        } catch (error: any) {
+          console.log('⚠️ Auth check failed:', error);
           console.log('🔍 Current user state before error:', get().user);
-
-          // Don't clear user data immediately on auth check failure
-          // Only clear if it's a persistent auth issue
-          set({
-            isAuthenticated: false,
-            isLoading: false,
-          });
 
           // Only clear token and user if it's a 401/403 error
           if (error.response?.status === 401 || error.response?.status === 403) {
@@ -239,6 +239,10 @@ export const useAuthStore = create<AuthState>()(
           } else {
             // For other errors, keep the user data but mark as not authenticated
             console.log('⚠️ Keeping user data for non-auth errors');
+            set({
+              isAuthenticated: false,
+              isLoading: false,
+            });
           }
 
           return false;
@@ -254,6 +258,7 @@ export const useAuthStore = create<AuthState>()(
       setToken: (token: string) => {
         setAuthToken(token);
         set({ token, isAuthenticated: true });
+        console.log('🔐 Token set in store:', token ? '***' : null);
       },
 
       // Clear authentication
@@ -298,12 +303,20 @@ export const useAuthStore = create<AuthState>()(
       restoreUserFromToken: async () => {
         const { token, user } = get();
 
+        console.log('🔍 restoreUserFromToken called with:', {
+          hasToken: !!token,
+          hasUser: !!user,
+          token: token ? '***' : null
+        });
+
         // If we have a token but no user data, fetch the user data
         if (token && !user) {
           console.log('🔍 Restoring user data from token...');
           try {
             const response = await authAPI.checkAuth();
             const { user: userData } = response.data;
+
+            console.log('🔍 Auth API response:', response.data);
 
             set({
               user: userData,
@@ -323,6 +336,10 @@ export const useAuthStore = create<AuthState>()(
             removeAuthToken();
             return false;
           }
+        } else if (!token) {
+          console.log('⚠️ No token available for restoration');
+        } else if (user) {
+          console.log('✅ User data already available');
         }
         return true;
       },

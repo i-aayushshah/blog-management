@@ -226,6 +226,18 @@ def check_auth(request):
     """
     Check authentication status endpoint.
     """
-    return Response({
-        'message': 'Authentication system is working.'
-    }, status=status.HTTP_200_OK)
+    # Check if user is authenticated
+    if request.user.is_authenticated:
+        return Response({
+            'user': {
+                'id': request.user.id,
+                'username': request.user.username,
+                'email': request.user.email,
+                'first_name': request.user.first_name,
+                'last_name': request.user.last_name
+            }
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({
+            'error': 'User not authenticated.'
+        }, status=status.HTTP_401_UNAUTHORIZED)

@@ -38,8 +38,11 @@ const Navbar: React.FC = () => {
     checkPersistedData();
 
     // Restore user data if we have a token but no user
-    restoreUserFromToken();
-  }, []);
+    const restoreUser = async () => {
+      await restoreUserFromToken();
+    };
+    restoreUser();
+  }, [restoreUserFromToken]);
 
   const handleLogout = async () => {
     try {
