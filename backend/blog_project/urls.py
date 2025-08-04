@@ -40,7 +40,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # API URLs with versioning
     path('api/v1/', include('apps.core.urls')),
-    path('api/v1/auth/', include('apps.authentication.urls')),
+    path('api/v1/auth/', include('apps.authentication.urls', namespace='auth')),
     path('api/v1/blog/', include('apps.blog.urls')),
 ]
 

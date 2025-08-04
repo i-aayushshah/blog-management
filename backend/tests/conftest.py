@@ -18,7 +18,7 @@ def user():
         password='testpass123',
         first_name='Test',
         last_name='User',
-        is_verified=True
+        is_email_verified=True
     )
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def unverified_user():
         password='testpass123',
         first_name='Unverified',
         last_name='User',
-        is_verified=False
+        is_email_verified=False
     )
 
 @pytest.fixture

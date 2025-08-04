@@ -22,7 +22,7 @@ class BlogTestCase(APITestCase):
             password='testpass123',
             first_name='Test',
             last_name='User',
-            is_verified=True
+            is_email_verified=True
         )
 
         # Create another user
@@ -32,7 +32,7 @@ class BlogTestCase(APITestCase):
             password='testpass123',
             first_name='Other',
             last_name='User',
-            is_verified=True
+            is_email_verified=True
         )
 
         # Create test category

@@ -29,6 +29,9 @@ def generate_jwt_token(user: User) -> str:
     token = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token
 
+# Alias for backward compatibility
+generate_token = generate_jwt_token
+
 def decode_jwt_token(token: str) -> Dict[str, Any]:
     """
     Decode and validate JWT token.
