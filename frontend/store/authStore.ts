@@ -43,6 +43,8 @@ export const useAuthStore = create<AuthState>()(
           const response = await authAPI.login(credentials);
           const { token, user } = response.data;
 
+          console.log('🔐 Login successful, user data:', user);
+
           // Store token
           setAuthToken(token);
 
@@ -81,6 +83,8 @@ export const useAuthStore = create<AuthState>()(
 
       // Logout action
       logout: async () => {
+        console.log('🔐 Logout called, clearing user data');
+
         try {
           await authAPI.logout();
         } catch (error) {
@@ -153,10 +157,10 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          await authAPI.resetPassword({ 
-            token, 
+          await authAPI.resetPassword({
+            token,
             password: newPassword,
-            password_confirm: newPassword 
+            password_confirm: newPassword
           });
 
           set({ isLoading: false });
@@ -211,15 +215,32 @@ export const useAuthStore = create<AuthState>()(
           });
 
           return true;
-        } catch (error) {
+                } catch (error: any) {
+          console.log('⚠️ Auth check failed, but preserving user data:', error);
+          console.log('🔍 Current user state before error:', get().user);
+
+          // Don't clear user data immediately on auth check failure
+          // Only clear if it's a persistent auth issue
           set({
-            user: null,
-            token: null,
             isAuthenticated: false,
             isLoading: false,
           });
 
-          removeAuthToken();
+          // Only clear token and user if it's a 401/403 error
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            console.log('🔐 Clearing auth due to 401/403 error');
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+            removeAuthToken();
+          } else {
+            // For other errors, keep the user data but mark as not authenticated
+            console.log('⚠️ Keeping user data for non-auth errors');
+          }
+
           return false;
         }
       },
@@ -237,12 +258,73 @@ export const useAuthStore = create<AuthState>()(
 
       // Clear authentication
       clearAuth: () => {
+        console.log('🔐 clearAuth called, clearing all auth data');
         removeAuthToken();
         set({
           user: null,
           token: null,
           isAuthenticated: false,
         });
+      },
+
+      // Debug function to log current state
+      debugState: () => {
+        const state = get();
+        console.log('🔍 Auth Store State:', {
+          user: state.user,
+          token: state.token ? '***' : null,
+          isAuthenticated: state.isAuthenticated,
+          isLoading: state.isLoading,
+        });
+      },
+
+      // Check persisted data
+      checkPersistedData: () => {
+        if (typeof window !== 'undefined') {
+          const persisted = localStorage.getItem('blog-auth-storage');
+          console.log('🔍 Persisted auth data:', persisted);
+          if (persisted) {
+            try {
+              const parsed = JSON.parse(persisted);
+              console.log('🔍 Parsed persisted data:', parsed);
+            } catch (e) {
+              console.error('❌ Error parsing persisted data:', e);
+            }
+          }
+        }
+      },
+
+      // Restore user data from token
+      restoreUserFromToken: async () => {
+        const { token, user } = get();
+
+        // If we have a token but no user data, fetch the user data
+        if (token && !user) {
+          console.log('🔍 Restoring user data from token...');
+          try {
+            const response = await authAPI.checkAuth();
+            const { user: userData } = response.data;
+
+            set({
+              user: userData,
+              isAuthenticated: true,
+            });
+
+            console.log('✅ User data restored:', userData);
+            return true;
+          } catch (error) {
+            console.error('❌ Failed to restore user data:', error);
+            // Clear invalid token
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+            });
+            removeAuthToken();
+            return false;
+          }
+        }
+        return true;
       },
     }),
     {

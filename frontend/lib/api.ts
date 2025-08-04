@@ -1,10 +1,10 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { toast } from 'react-hot-toast';
-import { 
-  LoginCredentials, 
-  RegisterCredentials, 
-  EmailVerificationData, 
-  PasswordResetRequest, 
+import {
+  LoginCredentials,
+  RegisterCredentials,
+  EmailVerificationData,
+  PasswordResetRequest,
   PasswordResetData,
   User,
   CreatePostData,
@@ -31,6 +31,9 @@ api.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔐 Adding auth token to request:', config.url);
+    } else {
+      console.log('⚠️ No auth token found for request:', config.url);
     }
 
     return config;
@@ -53,8 +56,24 @@ api.interceptors.response.use(
 
       // Handle different error status codes
       switch (status) {
-        case 401:
+                case 401:
           // Unauthorized - clear token and redirect to login
+          console.log('🔐 401 Unauthorized error detected');
+          console.log('📝 Request URL:', error.config?.url);
+          console.log('📝 Request method:', error.config?.method);
+          console.log('📝 Error response:', error.response?.data);
+
+          // Only clear auth for auth-related endpoints, not for blog operations
+          const isAuthEndpoint = error.config?.url?.includes('/auth/');
+          if (!isAuthEndpoint) {
+            console.log('⚠️  Non-auth endpoint returned 401, this might be a false positive');
+            console.log('⚠️  NOT clearing auth token for non-auth endpoint');
+            // Don't clear auth immediately for non-auth endpoints
+            toast.error('Authentication error. Please try again.');
+            break;
+          }
+
+          console.log('🔐 Clearing auth token for auth endpoint');
           if (typeof window !== 'undefined') {
             localStorage.removeItem('blog_auth_token');
             window.location.href = '/login';
@@ -125,8 +144,54 @@ export const blogAPI = {
   // Posts
   getPosts: (params?: Record<string, string | number>) => api.get('/blog/posts/', { params }),
   getPost: (id: number) => api.get(`/blog/posts/${id}/`),
-  createPost: (data: CreatePostData) => api.post('/blog/posts/', data),
-  updatePost: (id: number, data: UpdatePostData) => api.put(`/blog/posts/${id}/`, data),
+  createPost: (data: CreatePostData) => {
+    // Handle file upload with FormData
+    if (data.featured_image) {
+      const formData = new FormData();
+      formData.append('title', data.title);
+      formData.append('content', data.content);
+      if (data.excerpt) formData.append('excerpt', data.excerpt);
+      formData.append('status', data.status);
+      if (data.category_id) formData.append('category_id', data.category_id.toString());
+      if (data.tag_ids && data.tag_ids.length > 0) {
+        data.tag_ids.forEach(tagId => formData.append('tag_ids', tagId.toString()));
+      }
+      formData.append('featured_image', data.featured_image);
+      return api.post('/blog/posts/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else {
+      // Send as JSON if no file
+      const { featured_image, ...jsonData } = data;
+      return api.post('/blog/posts/', jsonData);
+    }
+  },
+  updatePost: (id: number, data: UpdatePostData) => {
+    // Handle file upload with FormData
+    if (data.featured_image) {
+      const formData = new FormData();
+      if (data.title) formData.append('title', data.title);
+      if (data.content) formData.append('content', data.content);
+      if (data.excerpt) formData.append('excerpt', data.excerpt);
+      if (data.status) formData.append('status', data.status);
+      if (data.category_id) formData.append('category_id', data.category_id.toString());
+      if (data.tag_ids && data.tag_ids.length > 0) {
+        data.tag_ids.forEach(tagId => formData.append('tag_ids', tagId.toString()));
+      }
+      formData.append('featured_image', data.featured_image);
+      return api.put(`/blog/posts/${id}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+    } else {
+      // Send as JSON if no file
+      const { featured_image, ...jsonData } = data;
+      return api.put(`/blog/posts/${id}/`, jsonData);
+    }
+  },
   deletePost: (id: number) => api.delete(`/blog/posts/${id}/`),
   getMyPosts: (params?: Record<string, string | number>) => api.get('/blog/posts/my_posts/', { params }),
   publishPost: (id: number) => api.post(`/blog/posts/${id}/publish/`),
