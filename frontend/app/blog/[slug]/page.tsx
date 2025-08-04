@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useBlogStore } from '@/store/blogStore';
 import PostDetail from '@/components/blog/PostDetail';
 import PostList from '@/components/blog/PostList';
@@ -117,12 +118,12 @@ const PostPage: React.FC = () => {
             <p className="text-gray-600 mb-6">
               The post you&apos;re looking for doesn&apos;t exist or has been removed.
             </p>
-            <a
+            <Link
               href="/blog"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Back to Blog
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -143,12 +144,12 @@ const PostPage: React.FC = () => {
             <p className="text-gray-600 mb-6">
               This post is not available for public viewing.
             </p>
-            <a
+            <Link
               href="/blog"
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Back to Blog
-            </a>
+            </Link>
           </div>
         </div>
       </div>

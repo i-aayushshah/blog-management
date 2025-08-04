@@ -60,7 +60,28 @@ interface BlogState {
   resetState: () => void;
 }
 
-const initialState = {
+const initialState: Omit<BlogState,
+  | 'fetchPosts'
+  | 'fetchFeaturedPosts'
+  | 'fetchPost'
+  | 'fetchPostBySlug'
+  | 'fetchMyPosts'
+  | 'fetchCategories'
+  | 'fetchTags'
+  | 'createPost'
+  | 'updatePost'
+  | 'deletePost'
+  | 'publishPost'
+  | 'unpublishPost'
+  | 'setSearch'
+  | 'setCategoryFilter'
+  | 'setTagFilter'
+  | 'setStatusFilter'
+  | 'clearFilters'
+  | 'setCurrentPost'
+  | 'clearError'
+  | 'resetState'
+> = {
   posts: [],
   featuredPosts: [],
   categories: [],
@@ -82,7 +103,7 @@ const initialState = {
     search: '',
     category: null,
     tag: null,
-    status: 'all',
+    status: 'all' as const,
   },
 };
 

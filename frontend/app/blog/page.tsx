@@ -91,7 +91,7 @@ const BlogPage: React.FC = () => {
 
                 {filters.search && (
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                    Search: "{filters.search}"
+                    Search: &quot;{filters.search}&quot;
                   </span>
                 )}
 

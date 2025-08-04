@@ -143,10 +143,10 @@ const PostCard: React.FC<PostCardProps> = ({
           </div>
 
           {/* View Count (if available) */}
-          {post.view_count !== undefined && (
+          {(post as { view_count?: number }).view_count !== undefined && (
             <div className="flex items-center gap-1">
               <Eye className="w-4 h-4" />
-              <span>{post.view_count}</span>
+              <span>{(post as { view_count?: number }).view_count}</span>
             </div>
           )}
         </div>

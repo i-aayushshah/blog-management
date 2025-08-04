@@ -29,7 +29,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   // Debounced search function
   const debouncedSearch = useRef(
-    debounce(async (searchQuery: string) => {
+    debounce(async (...args: unknown[]) => {
+      const searchQuery = args[0] as string;
       if (searchQuery.trim()) {
         setIsSearching(true);
         try {

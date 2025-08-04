@@ -37,9 +37,13 @@ const LoginForm: React.FC = () => {
       if (success) {
         router.push('/');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if the error is due to unverified email
-      if (error?.response?.data?.error?.includes('verify your email')) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error.response as { data?: { error?: string } })?.data?.error
+        : null;
+
+      if (errorMessage?.includes('verify your email')) {
         setUnverifiedEmail(data.email);
         setShowResendVerification(true);
         setError('root', {
@@ -69,7 +73,7 @@ const LoginForm: React.FC = () => {
           setShowResendVerification(false);
         }, 3000);
       }
-    } catch (error) {
+    } catch {
       // Error handling is done in the store
     } finally {
       setIsLoading(false);
@@ -89,7 +93,7 @@ const LoginForm: React.FC = () => {
           setResendEmail('');
         }, 3000);
       }
-    } catch (error) {
+    } catch {
       // Error handling is done in the store
     } finally {
       setIsLoading(false);

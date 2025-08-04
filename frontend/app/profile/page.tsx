@@ -254,7 +254,7 @@ const ProfilePage: React.FC = () => {
                           </div>
                           <div className="flex items-center space-x-1">
                             <Eye className="w-4 h-4" />
-                            <span>{(post as any).view_count || 0} views</span>
+                            <span>{(post as { view_count?: number }).view_count || 0} views</span>
                           </div>
                         </div>
                       </div>

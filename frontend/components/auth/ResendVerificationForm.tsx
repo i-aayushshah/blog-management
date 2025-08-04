@@ -43,7 +43,7 @@ const ResendVerificationForm: React.FC = () => {
           </span>
         </div>
         <p className="text-sm text-green-700 mb-3">
-          We've sent a new verification email to <strong>{email}</strong>
+          We&apos;ve sent a new verification email to <strong>{email}</strong>
         </p>
         <Button
           variant="outline"

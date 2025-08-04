@@ -5,9 +5,10 @@ import { ChevronLeft, ChevronRight, Loader2, FileText } from 'lucide-react';
 import { useBlogStore } from '@/store/blogStore';
 import PostCard from './PostCard';
 import { cn } from '@/lib/utils';
+import { Post } from '@/types';
 
 interface PostListProps {
-  posts?: any[];
+  posts?: Post[];
   isLoading?: boolean;
   showPagination?: boolean;
   variant?: 'default' | 'featured' | 'compact';

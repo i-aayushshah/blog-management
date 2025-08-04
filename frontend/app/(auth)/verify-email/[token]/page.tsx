@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 
 const VerifyEmailTokenPage: React.FC = () => {
   const [isVerifying, setIsVerifying] = useState(true);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isSuccess] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const params = useParams();
@@ -43,7 +43,7 @@ const VerifyEmailTokenPage: React.FC = () => {
           const errorData = await response.json();
           setError(errorData.error || 'Verification failed. The link may be expired or invalid.');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError('Verification failed. Please try again.');
       } finally {
         setIsVerifying(false);

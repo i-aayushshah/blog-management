@@ -155,10 +155,10 @@ const PostDetail: React.FC<PostDetailProps> = ({ post, className }) => {
               </div>
 
               {/* View Count */}
-              {(post as any).view_count !== undefined && (
+              {(post as { view_count?: number }).view_count !== undefined && (
                 <div className="flex items-center gap-1">
                   <Eye className="w-4 h-4" />
-                  <span>{(post as any).view_count} views</span>
+                  <span>{(post as { view_count?: number }).view_count} views</span>
                 </div>
               )}
             </div>
