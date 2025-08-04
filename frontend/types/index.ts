@@ -42,7 +42,8 @@ export interface PasswordResetRequest {
 
 export interface PasswordResetData {
   token: string;
-  new_password: string;
+  password: string;
+  password_confirm: string;
 }
 
 // Blog Types

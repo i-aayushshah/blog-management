@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Eye, EyeOff, Mail, Lock, User, UserCheck } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { RegisterCredentials } from '@/types';
-import { isValidEmail, validatePassword } from '@/lib/utils';
+import { isValidEmail, validatePasswordForForm } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 
@@ -29,16 +29,6 @@ const RegisterForm: React.FC = () => {
   const password = watch('password');
 
   const onSubmit = async (data: RegisterCredentials) => {
-    // Validate password strength
-    const passwordValidation = validatePassword(data.password);
-    if (!passwordValidation.isValid) {
-      setError('password', {
-        type: 'manual',
-        message: passwordValidation.errors[0],
-      });
-      return;
-    }
-
     // Check if passwords match
     if (data.password !== data.password_confirm) {
       setError('password_confirm', {
@@ -155,10 +145,7 @@ const RegisterForm: React.FC = () => {
                 helperText="Must be at least 8 characters with uppercase, lowercase, number, and special character"
                 {...register('password', {
                   required: 'Password is required',
-                  minLength: {
-                    value: 8,
-                    message: 'Password must be at least 8 characters',
-                  },
+                  validate: validatePasswordForForm,
                 })}
               />
               <button

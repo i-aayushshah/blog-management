@@ -38,7 +38,7 @@ def send_verification_email(user: User) -> bool:
         # Email template context
         context = {
             'user': user,
-            'verification_url': f"{settings.FRONTEND_URL}/verify-email?token={token}",
+            'verification_url': f"{settings.FRONTEND_URL}/verify-email/{token}",
             'token': token,
             'expires_in': '24 hours'
         }
@@ -87,7 +87,7 @@ def send_password_reset_email(user: User) -> bool:
         # Email template context
         context = {
             'user': user,
-            'reset_url': f"{settings.FRONTEND_URL}/reset-password?token={token}",
+            'reset_url': f"{settings.FRONTEND_URL}/reset-password/{token}",
             'token': token,
             'expires_in': '1 hour'
         }
@@ -163,6 +163,31 @@ def verify_password_reset_token(token: str) -> Optional[User]:
 
     except User.DoesNotExist:
         return None
+
+def reset_user_password(token: str, new_password: str) -> bool:
+    """
+    Reset user password using reset token.
+
+    Args:
+        token: Password reset token
+        new_password: New password
+
+    Returns:
+        True if password reset successfully, False otherwise
+    """
+    try:
+        user = verify_password_reset_token(token)
+        if user:
+            # Set new password
+            user.set_password(new_password)
+            # Clear reset token
+            clear_password_reset_token(user)
+            user.save()
+            return True
+        return False
+    except Exception as e:
+        print(f"❌ Error resetting password: {e}")
+        return False
 
 def clear_password_reset_token(user: User) -> None:
     """

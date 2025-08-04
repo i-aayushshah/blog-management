@@ -71,7 +71,7 @@ export function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
-// Validate password strength
+// Validate password strength (returns object with details)
 export function validatePassword(password: string): {
   isValid: boolean;
   errors: string[];
@@ -102,6 +102,15 @@ export function validatePassword(password: string): {
     isValid: errors.length === 0,
     errors,
   };
+}
+
+// Validate password for React Hook Form (returns true or error message)
+export function validatePasswordForForm(password: string): true | string {
+  const validation = validatePassword(password);
+  if (validation.isValid) {
+    return true;
+  }
+  return validation.errors[0] || 'Password is invalid';
 }
 
 // Get initials from name

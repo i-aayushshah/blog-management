@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, AlertCircle, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { LoginCredentials } from '@/types';
 import { isValidEmail } from '@/lib/utils';
@@ -14,8 +14,13 @@ import Input from '@/components/ui/Input';
 const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [showResendSection, setShowResendSection] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
   const router = useRouter();
   const login = useAuthStore((state) => state.login);
+  const resendVerification = useAuthStore((state) => state.resendVerification);
 
   const {
     register,
@@ -32,11 +37,60 @@ const LoginForm: React.FC = () => {
       if (success) {
         router.push('/');
       }
+    } catch (error: any) {
+      // Check if the error is due to unverified email
+      if (error?.response?.data?.error?.includes('verify your email')) {
+        setUnverifiedEmail(data.email);
+        setShowResendVerification(true);
+        setError('root', {
+          type: 'manual',
+          message: 'Please verify your email before logging in. You can request a new verification email below.',
+        });
+      } else {
+        setError('root', {
+          type: 'manual',
+          message: 'Invalid email or password',
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedEmail) return;
+
+    setIsLoading(true);
+    try {
+      const success = await resendVerification(unverifiedEmail);
+      if (success) {
+        // Show success message and hide the resend section after a delay
+        setTimeout(() => {
+          setShowResendVerification(false);
+        }, 3000);
+      }
     } catch (error) {
-      setError('root', {
-        type: 'manual',
-        message: 'Invalid email or password',
-      });
+      // Error handling is done in the store
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendVerificationFromSection = async () => {
+    if (!resendEmail) return;
+
+    setIsLoading(true);
+    try {
+      const success = await resendVerification(resendEmail);
+      if (success) {
+        // Show success message and hide the resend section after a delay
+        setTimeout(() => {
+          setShowResendSection(false);
+          setResendEmail('');
+        }, 3000);
+      }
+    } catch (error) {
+      // Error handling is done in the store
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +155,54 @@ const LoginForm: React.FC = () => {
             </div>
           )}
 
+          {showResendVerification && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <AlertCircle className="h-5 w-5 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-yellow-800 mb-2">
+                    Email Not Verified
+                  </h3>
+                  <p className="text-sm text-yellow-700 mb-3">
+                    Your email address <strong>{unverifiedEmail}</strong> has not been verified yet.
+                    {unverifiedEmail && (
+                      <>
+                        <br />
+                        <span className="text-xs text-yellow-600">
+                          💡 If you registered a while ago, your verification link may have expired.
+                          You can request a new verification email below.
+                        </span>
+                      </>
+                    )}
+                  </p>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleResendVerification}
+                      loading={isLoading}
+                      disabled={isLoading}
+                      className="text-yellow-700 border-yellow-300 hover:bg-yellow-100"
+                    >
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Resend Verification Email
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowResendVerification(false)}
+                      className="text-yellow-600 hover:text-yellow-700"
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Button
             type="submit"
             className="w-full"
@@ -111,12 +213,68 @@ const LoginForm: React.FC = () => {
           </Button>
         </form>
 
-        <div className="mt-6 text-center">
+        {/* Resend Verification Section */}
+        <div className="mt-6 border-t pt-6">
+          <button
+            type="button"
+            onClick={() => setShowResendSection(!showResendSection)}
+            className="w-full flex items-center justify-between text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <span>Need to resend verification email?</span>
+            {showResendSection ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </button>
+
+          {showResendSection && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-900 mb-3">
+                Resend Verification Email
+              </h3>
+              <p className="text-xs text-gray-600 mb-3">
+                Enter your email address to receive a new verification link.
+              </p>
+              <div className="space-y-3">
+                <Input
+                  label="Email"
+                  type="email"
+                  placeholder="Enter your email address"
+                  icon={<Mail className="h-4 w-4" />}
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResendVerificationFromSection}
+                  loading={isLoading}
+                  disabled={isLoading || !resendEmail}
+                  className="w-full"
+                >
+                  <RefreshCw className="h-4 w-4 mr-1" />
+                  Send Verification Email
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 text-center space-y-2">
           <Link
             href="/forgot-password"
-            className="text-sm text-blue-600 hover:text-blue-500"
+            className="text-sm text-blue-600 hover:text-blue-500 block"
           >
             Forgot your password?
+          </Link>
+
+          <Link
+            href="/verify-email"
+            className="text-sm text-blue-600 hover:text-blue-500 block"
+          >
+            Need to verify your email?
           </Link>
         </div>
 

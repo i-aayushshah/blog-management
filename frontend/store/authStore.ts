@@ -16,6 +16,7 @@ interface AuthState {
   register: (credentials: RegisterCredentials) => Promise<boolean>;
   logout: () => void;
   verifyEmail: (token: string) => Promise<boolean>;
+  resendVerification: (email: string) => Promise<boolean>;
   forgotPassword: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
   updateProfile: (data: Partial<User>) => Promise<boolean>;
@@ -57,7 +58,8 @@ export const useAuthStore = create<AuthState>()(
           return true;
         } catch (error) {
           set({ isLoading: false });
-          return false;
+          // Re-throw the error so the component can handle it
+          throw error;
         }
       },
 
@@ -114,6 +116,22 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
+      // Resend verification email action
+      resendVerification: async (email: string) => {
+        set({ isLoading: true });
+
+        try {
+          await authAPI.resendVerification({ email });
+
+          set({ isLoading: false });
+          toast.success('Verification email sent successfully!');
+          return true;
+        } catch (error) {
+          set({ isLoading: false });
+          return false;
+        }
+      },
+
       // Forgot password action
       forgotPassword: async (email: string) => {
         set({ isLoading: true });
@@ -135,7 +153,11 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          await authAPI.resetPassword({ token, new_password: newPassword });
+          await authAPI.resetPassword({ 
+            token, 
+            password: newPassword,
+            password_confirm: newPassword 
+          });
 
           set({ isLoading: false });
           toast.success('Password reset successfully! You can now login with your new password.');

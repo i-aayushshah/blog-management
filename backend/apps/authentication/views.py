@@ -15,7 +15,8 @@ from .serializers import (
 )
 from .services import (
     send_verification_email, send_password_reset_email,
-    verify_email_token, verify_password_reset_token, clear_password_reset_token
+    verify_email_token, verify_password_reset_token, clear_password_reset_token,
+    reset_user_password
 )
 from .jwt_utils import generate_jwt_token
 
@@ -134,10 +135,10 @@ class ResetPasswordView(APIView):
         serializer = PasswordResetSerializer(data=request.data)
         if serializer.is_valid():
             token = serializer.validated_data['token']
-            new_password = serializer.validated_data['new_password']
+            new_password = serializer.validated_data['password']
 
             # Verify reset token and update password
-            success = verify_password_reset_token(token, new_password)
+            success = reset_user_password(token, new_password)
             if success:
                 return Response({
                     'message': 'Password reset successfully.'
