@@ -1,0 +1,25 @@
+Welcome to Blog App!
+
+Hello {{ user.get_full_name|default:user.username }},
+
+Thank you for registering with Blog App. To complete your registration, please verify your email address.
+
+Verification Link:
+{{ verification_url }}
+
+Verification Token:
+{{ token }}
+
+Important:
+- This verification link will expire in {{ expires_in }}
+- If you didn't create an account, you can safely ignore this email
+- For security reasons, please don't share this verification token with anyone
+
+If you have any questions, please contact our support team.
+
+Best regards,
+The Blog App Team
+
+---
+This email was sent to {{ user.email }}. If you didn't register for Blog App, please ignore this email.
+© 2024 Blog App. All rights reserved.
