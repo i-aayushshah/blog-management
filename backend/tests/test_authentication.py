@@ -162,8 +162,8 @@ class AuthenticationTestCase(APITestCase):
 
     def test_jwt_token_invalid(self):
         """Test JWT token validation with invalid token"""
-        with self.assertRaises(jwt.InvalidTokenError):
-            get_user_from_token('invalid_token')
+        user_from_token = get_user_from_token('invalid_token')
+        self.assertIsNone(user_from_token)
 
     def test_forgot_password_success(self):
         """Test forgot password with valid email"""
