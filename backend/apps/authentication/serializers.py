@@ -88,10 +88,7 @@ class UserLoginSerializer(serializers.Serializer):
     Serializer for user login.
     """
     email = serializers.EmailField()
-    password = serializers.CharField(
-        style={'input_type': 'password'},
-        write_only=True
-    )
+    password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
         """
@@ -101,19 +98,18 @@ class UserLoginSerializer(serializers.Serializer):
         password = attrs.get('password')
 
         if email and password:
+            # Check if user exists
             try:
                 user = User.objects.get(email=email)
                 if not user.check_password(password):
-                    raise serializers.ValidationError("Invalid email or password.")
-                if not user.is_email_verified:
-                    raise serializers.ValidationError("Please verify your email before logging in.")
+                    raise serializers.ValidationError('Invalid credentials.')
                 if not user.is_active:
-                    raise serializers.ValidationError("Account is deactivated.")
+                    raise serializers.ValidationError('User account is disabled.')
                 attrs['user'] = user
             except User.DoesNotExist:
-                raise serializers.ValidationError("Invalid email or password.")
+                raise serializers.ValidationError('Invalid credentials.')
         else:
-            raise serializers.ValidationError("Email and password are required.")
+            raise serializers.ValidationError('Must include email and password.')
 
         return attrs
 

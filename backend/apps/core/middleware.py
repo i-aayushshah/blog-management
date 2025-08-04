@@ -10,82 +10,21 @@ from apps.authentication.jwt_utils import get_user_from_token, is_token_valid
 
 logger = logging.getLogger(__name__)
 
-class JWTAuthenticationMiddleware(MiddlewareMixin):
+class JWTAuthenticationMiddleware:
     """
-    Custom JWT Authentication Middleware.
+    JWT Authentication Middleware for DRF compatibility.
     """
 
-    def process_request(self, request):
-        """
-        Process request and authenticate user using JWT token.
-        """
-        # Skip authentication for certain paths
-        excluded_paths = [
-            '/admin/',
-            '/api/v1/health/',
-            '/api/v1/info/',
-            '/api/v1/auth/register/',
-            '/api/v1/auth/login/',
-            '/api/v1/auth/verify-email/',
-            '/api/v1/auth/forgot-password/',
-            '/api/v1/auth/reset-password/',
-            '/api/v1/auth/resend-verification/',
-            '/static/',
-            '/media/',
-        ]
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-        # Check if path should be excluded
-        for excluded_path in excluded_paths:
-            if request.path.startswith(excluded_path):
-                return None
+    def __call__(self, request):
+        # Let DRF handle authentication for API endpoints
+        if request.path.startswith('/api/'):
+            return self.get_response(request)
 
-        # Get authorization header
-        auth_header = get_authorization_header(request)
-
-        if not auth_header:
-            # For API endpoints, return 401
-            if request.path.startswith('/api/'):
-                return JsonResponse({
-                    'message': 'Authentication credentials were not provided.',
-                    'error': 'authentication_required'
-                }, status=status.HTTP_401_UNAUTHORIZED)
-            return None
-
-        # Extract token
-        auth_parts = auth_header.decode().split()
-
-        if len(auth_parts) != 2 or auth_parts[0].lower() != 'bearer':
-            if request.path.startswith('/api/'):
-                return JsonResponse({
-                    'message': 'Invalid authentication header format.',
-                    'error': 'invalid_auth_header'
-                }, status=status.HTTP_401_UNAUTHORIZED)
-            return None
-
-        token = auth_parts[1]
-
-        # Validate token
-        if not is_token_valid(token):
-            if request.path.startswith('/api/'):
-                return JsonResponse({
-                    'message': 'Invalid or expired token.',
-                    'error': 'invalid_token'
-                }, status=status.HTTP_401_UNAUTHORIZED)
-            return None
-
-        # Get user from token
-        try:
-            user = get_user_from_token(token)
-            request.user = user
-        except Exception as e:
-            if request.path.startswith('/api/'):
-                return JsonResponse({
-                    'message': 'Invalid token.',
-                    'error': 'invalid_token'
-                }, status=status.HTTP_401_UNAUTHORIZED)
-            return None
-
-        return None
+        # For non-API endpoints, we can add custom logic here if needed
+        return self.get_response(request)
 
 class RequestLoggingMiddleware(MiddlewareMixin):
     """

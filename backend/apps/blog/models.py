@@ -150,11 +150,20 @@ class Post(BaseModel):
         return self.title
 
     def save(self, *args, **kwargs):
-        """Auto-generate slug from title and set published_at when status changes to published."""
+        """
+        Auto-generate slug from title if not provided.
+        """
         if not self.slug:
             self.slug = slugify(self.title)
 
-        # Set published_at when status changes to published
+            # Handle duplicate slugs
+            counter = 1
+            original_slug = self.slug
+            while Post.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+
+        # Set published_at if status is published and not already set
         if self.status == 'published' and not self.published_at:
             self.published_at = timezone.now()
 
